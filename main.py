@@ -4,25 +4,31 @@ import os
 
 
 def main():
-    directory = "./dataset/PointClouds"
-    #
-    # source = o3d.io.read_point_cloud(directory + "/0.pcd")
+    directory = "./dataset/PointClouds/"
 
     first = True
-    pcd = o3d.geometry.PointCloud()
 
     vis = o3d.visualization.Visualizer()
     vis.create_window()
-    for filename in os.scandir(directory):
+
+    files = os.listdir(directory)
+
+    for i in range(1, len(files)):
+        prev = o3d.io.read_point_cloud(directory + files[i-1])
+        tmp = o3d.io.read_point_cloud(directory + files[i])
+        dist = tmp.compute_point_cloud_distance(prev)
+        dist = np.asarray(dist)
+        ind = np.where(dist < 0.01)[0]
         if first:
-            pcd = o3d.io.read_point_cloud(filename.path)
-            vis.add_geometry(pcd)
+            current = tmp.select_by_index(ind, invert=True)
+            vis.add_geometry(current)
             first = False
         else:
-            pcd.points = o3d.io.read_point_cloud(filename.path).points
-            vis.update_geometry(pcd)
+            current.points = tmp.select_by_index(ind, invert=True).points
+            vis.update_geometry(current)
             vis.poll_events()
             vis.update_renderer()
+
     vis.destroy_window()
 
 

@@ -12,6 +12,7 @@ def main():
     vis.create_window()
 
     files = os.listdir(directory)
+    files.sort(key=lambda x: int(os.path.splitext(x)[0]))
 
     for i in range(1, len(files)):
         prev = o3d.io.read_point_cloud(directory + files[i-1])

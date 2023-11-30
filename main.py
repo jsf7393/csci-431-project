@@ -114,7 +114,7 @@ def main():
             colors = plt.get_cmap("tab20")(clusters / (max_clust if max_clust > 0 else 1))
             colors[clusters < 0] = 0
             current.colors = o3d.utility.Vector3dVector(colors[:, :3])
-            draw_bounding_boxes(vis, clusters, max_clust, current)
+            draw_bounding_boxes(vis, clusters, current)
             create_csv(file_num)
 
             vis.add_geometry(current)
@@ -132,7 +132,7 @@ def main():
             colors = plt.get_cmap("tab20")(clusters / (max_clust if max_clust > 0 else 1))
             colors[clusters < 0] = 0
             current.colors = o3d.utility.Vector3dVector(colors[:, :3])
-            draw_bounding_boxes(vis, clusters, max_clust, current)
+            draw_bounding_boxes(vis, clusters, current)
             create_csv(file_num)
             vis.update_geometry(current)
             vis.poll_events()

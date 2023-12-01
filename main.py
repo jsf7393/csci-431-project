@@ -3,6 +3,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 import os
 import csv
+import time
 
 bb = dict()
 car_details = []
@@ -33,7 +34,7 @@ def draw_bounding_boxes(vis, clusters, pcd):
         details.append(aabb.get_center()[1])
         details.append(aabb.get_center()[2])
         vis.add_geometry(aabb)
-        if (len(prev_centers)) > 0:
+        if (len(prev_centers)) > 0 and len(ind) > 0:
             vectors = calculate_vectors(i)
             details.append(vectors[0])
             details.append(vectors[1])
@@ -71,8 +72,8 @@ def create_csv(file_num):
 
 
 def calculate_vectors(i):
-    prev_center = prev_centers.get(i)
     curr_center = curr_centers.get(i)
+    prev_center = prev_centers.get(i)
     vectors = []
     if i in prev_centers.keys():
         vectors.append(curr_center[0] - prev_center[0])
@@ -94,7 +95,9 @@ def main():
     files.sort(key=lambda x: int(os.path.splitext(x)[0]))
 
     for i in range(1, len(files), 1):
-        file_num = files[i].split(".")[0]
+        start = time.time()
+
+        file_num = files[i-1].split(".")[0]
 
         prev = o3d.io.read_point_cloud(directory + files[i-1])
         tmp = o3d.io.read_point_cloud(directory + files[i])
@@ -134,9 +137,10 @@ def main():
             current.colors = o3d.utility.Vector3dVector(colors[:, :3])
             draw_bounding_boxes(vis, clusters, current)
             create_csv(file_num)
-            vis.update_geometry(current)
+            vis.add_geometry(current)
             vis.poll_events()
             vis.update_renderer()
+            print(time.time() - start)
 
     vis.destroy_window()
 

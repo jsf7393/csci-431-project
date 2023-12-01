@@ -11,7 +11,7 @@ prev_centers = dict()
 curr_centers = dict()
 
 
-def draw_bounding_boxes(vis, clusters, pcd):
+def draw_bounding_boxes_and_compute(vis, clusters, pcd):
     global prev_centers
     global curr_centers
     global car_details
@@ -94,53 +94,45 @@ def main():
     files = os.listdir(directory)
     files.sort(key=lambda x: int(os.path.splitext(x)[0]))
 
+    pcds = [o3d.io.read_point_cloud(directory + files[0])]
+
+    times = []
+
     for i in range(1, len(files), 1):
         start = time.time()
 
         file_num = files[i-1].split(".")[0]
 
-        prev = o3d.io.read_point_cloud(directory + files[i-1])
+        prev = pcds[i-1]
         tmp = o3d.io.read_point_cloud(directory + files[i])
+        pcds.append(tmp)
 
         dist = tmp.compute_point_cloud_distance(prev)
         dist = np.asarray(dist)
         ind = np.where(dist > 0.001)[0]
-        if first:
-            current = tmp.select_by_index(ind)
-            current = current.remove_radius_outlier(nb_points=2, radius=1.5)[0]
-            # current = current.remove_statistical_outlier(nb_neighbors=2, std_ratio=2.0)[0]
-            clusters = np.array(current.cluster_dbscan(eps=2.0, min_points=2))
-            max_clust = 0
-            if clusters.size > 0:
-                max_clust = clusters.max()
-            print(f"{max_clust + 1} clusters")
-            colors = plt.get_cmap("tab20")(clusters / (max_clust if max_clust > 0 else 1))
-            colors[clusters < 0] = 0
-            current.colors = o3d.utility.Vector3dVector(colors[:, :3])
-            draw_bounding_boxes(vis, clusters, current)
-            create_csv(file_num)
+        current = tmp.select_by_index(ind)
 
-            vis.add_geometry(current)
-            first = False
-        else:
-            current.points = tmp.select_by_index(ind).points
+        current = current.remove_radius_outlier(nb_points=2, radius=2.0)[0]
+        # current.points = current.remove_statistical_outlier(nb_neighbors=2, std_ratio=0.01)[0].points
+        clusters = np.array(current.cluster_dbscan(eps=2.0, min_points=2))
+        max_clust = 0
+        if clusters.size > 0:
+            max_clust = clusters.max()
+        print(f"{max_clust + 1} clusters")
+        colors = plt.get_cmap("tab20")(clusters / (max_clust if max_clust > 0 else 1))
+        colors[clusters < 0] = 0
+        current.colors = o3d.utility.Vector3dVector(colors[:, :3])
 
-            current.points = current.remove_radius_outlier(nb_points=2, radius=1.5)[0].points
-            # current.points = current.remove_statistical_outlier(nb_neighbors=2, std_ratio=0.01)[0].points
-            clusters = np.array(current.cluster_dbscan(eps=2.0, min_points=2))
-            max_clust = 0
-            if clusters.size > 0:
-                max_clust = clusters.max()
-            print(f"{max_clust + 1} clusters")
-            colors = plt.get_cmap("tab20")(clusters / (max_clust if max_clust > 0 else 1))
-            colors[clusters < 0] = 0
-            current.colors = o3d.utility.Vector3dVector(colors[:, :3])
-            draw_bounding_boxes(vis, clusters, current)
-            create_csv(file_num)
-            vis.add_geometry(current)
-            vis.poll_events()
-            vis.update_renderer()
-            print(time.time() - start)
+        draw_bounding_boxes_and_compute(vis, clusters, current)
+        create_csv(file_num)
+
+        vis.add_geometry(current)
+        vis.poll_events()
+        vis.update_renderer()
+        times.append(time.time() - start)
+        print(times[i-1])
+
+    print(f"Average frame time: {sum(times) / len(times)}")
 
     vis.destroy_window()
 

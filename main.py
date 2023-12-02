@@ -90,6 +90,10 @@ def calculate_vectors(i):
 
 
 def main():
+    result_dir = "./perception_results"
+    if not os.path.exists(result_dir):
+        os.makedirs(result_dir)
+
     directory = "./dataset/PointClouds/"
 
     first = True

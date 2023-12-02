@@ -1,3 +1,7 @@
+"""
+File: main.py
+Authors: Jacob Fricano, Jiawei Liu
+"""
 import open3d as o3d
 import numpy as np
 from matplotlib import pyplot as plt
@@ -5,6 +9,7 @@ import os
 import csv
 import time
 
+# initialize
 bb = dict()
 car_details = []
 prev_centers = dict()
@@ -12,6 +17,13 @@ curr_centers = dict()
 
 
 def draw_bounding_boxes_and_compute(vis, clusters, pcd):
+    """
+    Compute and draw bounding boxes.
+    :param vis: visualizer
+    :param clusters: clusters
+    :param pcd: pcd
+    :return:
+    """
     global prev_centers
     global curr_centers
     global car_details
@@ -78,6 +90,11 @@ def create_csv(file_num):
 
 
 def calculate_vectors(i):
+    """
+    calculating vectors for each car.
+    :param i: i
+    :return:
+    """
     curr_center = curr_centers.get(i)
     prev_center = prev_centers.get(i)
     vectors = []
@@ -90,9 +107,10 @@ def calculate_vectors(i):
 
 
 def main():
-    result_dir = "./perception_results"
-    if not os.path.exists(result_dir):
-        os.makedirs(result_dir)
+    """
+    Main function
+    :return:
+    """
 
     directory = "./dataset/PointClouds/"
 
